@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="隐形的翅膀" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#f7f1e8" />
+    <title>隐形的翅膀</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="ipad.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#calendar" aria-label="隐形的翅膀首页">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span class="brand-copy"><strong id="home-title">隐形的翅膀</strong><small id="home-subtitle">我的人生下半场日历</small></span>
+      </a>
+      <p class="tagline" id="home-motto">安静地过好今天，也好好地记录它</p>
+    </header>
+
+    <main id="app" class="app-shell" aria-live="polite"></main>
+
+    <template id="calendar-template">
+      <section class="calendar-view">
+        <div class="calendar-wings" aria-hidden="true">
+          <div class="calendar-wing-image"></div>
+          <div class="calendar-wing-ripple"></div>
+        </div>
+        <div class="calendar-toolbar">
+          <div>
+            <h1 id="month-title"></h1>
+          </div>
+          <div class="calendar-nav" aria-label="日历导航">
+            <button class="button button-quiet utility-button" id="home-edit" type="button">编辑首页</button>
+            <button class="button button-quiet utility-button" id="theme-button" type="button">主题颜色</button>
+            <button class="button button-quiet utility-button" id="data-button" type="button">数据备份</button>
+            <button class="button button-quiet" id="previous-month" type="button" aria-label="上一月">← <span>上一月</span></button>
+            <button class="button button-today" id="today-button" type="button">今天</button>
+            <button class="button button-quiet" id="next-month" type="button" aria-label="下一月"><span>下一月</span> →</button>
+          </div>
+        </div>
+
+        <div class="home-template-controls" id="home-template-controls" hidden>
+          <span>首页显示</span>
+          <label><input id="show-home-subtitle" type="checkbox" /> 副标题</label>
+          <label><input id="show-home-motto" type="checkbox" /> 短句</label>
+          <button id="reset-home-template" type="button">恢复默认</button>
+        </div>
+
+        <div class="calendar-card">
+          <div class="weekdays" aria-hidden="true">
+            <span>周日</span><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span>
+          </div>
+          <div id="calendar-grid" class="calendar-grid" role="grid"></div>
+        </div>
+
+        <dialog id="data-dialog" class="data-dialog">
+          <form method="dialog">
+            <div class="data-dialog-heading"><div><p class="eyebrow">本机数据</p><h2>备份与迁移</h2></div><button class="dialog-close" value="cancel" aria-label="关闭">×</button></div>
+            <p>导出一份 JSON 备份，可安全保存在 Mac 上，也可导入桌面版。导入时不会覆盖桌面版中已有日期的数据。</p>
+            <div class="data-actions">
+              <button class="button button-today" id="export-data" type="button">导出备份</button>
+              <label class="button button-quiet import-label">导入备份<input id="import-data" type="file" accept="application/json,.json" /></label>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog id="theme-dialog" class="theme-dialog">
+          <form method="dialog">
+            <div class="data-dialog-heading"><div><p class="eyebrow">日历外观</p><h2>主题颜色</h2></div><button class="dialog-close" value="cancel" aria-label="关闭">×</button></div>
+            <p>选择一个颜色，日历会立即换上协调的深浅色调。</p>
+            <div id="theme-palette" class="theme-palette" aria-label="主题颜色选项"></div>
+            <button id="reset-theme" class="reset-theme" type="button">恢复默认</button>
+          </form>
+        </dialog>
+      </section>
+    </template>
+
+    <template id="daily-template">
+      <article class="daily-view">
+        <nav class="day-nav" aria-label="日期导航">
+          <div class="day-nav-left"><button class="button button-back" id="back-to-calendar" type="button">← 日历</button><button class="button template-edit-button" id="template-edit" type="button">编辑模板</button></div>
+          <div class="day-nav-actions">
+            <button class="icon-button" id="previous-day" type="button" aria-label="前一天">←</button>
+            <button class="button button-today" id="daily-today" type="button">今天</button>
+            <button class="icon-button" id="next-day" type="button" aria-label="后一天">→</button>
+          </div>
+        </nav>
+
+        <header class="daily-header">
+          <p class="eyebrow" id="day-year"></p>
+          <h1 id="day-title"></h1>
+          <p class="save-status" id="save-status" role="status"><span aria-hidden="true">✓</span> 已保存到本机</p>
+        </header>
+
+        <div class="journal-grid">
+          <section class="note-card note-yellow direction-card">
+            <div class="card-heading"><span class="card-icon" aria-hidden="true">☀</span><div><p class="card-number">01</p><h2 data-template="directionTitle">今日主线</h2></div></div>
+            <label class="prompt" for="direction" data-template="directionPrompt">今天最重要的是什么？今天我要守住什么？</label>
+            <textarea id="direction" class="lined-input compact" rows="3" placeholder="今天，我想……" data-template-placeholder="directionPlaceholder"></textarea>
+          </section>
+
+          <section class="note-card note-rose quote-card">
+            <div class="card-heading"><span class="card-icon" aria-hidden="true">“</span><div><p class="card-number">02</p><h2 data-template="quoteTitle">今日一句</h2></div></div>
+            <label class="sr-only" for="daily-quote">今天触动我的一句话</label>
+            <textarea id="daily-quote" class="lined-input compact" rows="3" placeholder="记下一句触动你的话……" data-template-placeholder="quotePlaceholder"></textarea>
+            <label class="source-field"><span data-template="quoteSourceLabel">来源（选填）</span><input id="quote-source" type="text" maxlength="120" placeholder="书、播客、对话，或自己的想法" data-template-placeholder="quoteSourcePlaceholder" /></label>
+          </section>
+
+          <section class="note-card note-blue actions-card">
+            <div class="card-heading actions-heading">
+              <span class="card-icon" aria-hidden="true">✓</span>
+              <div><p class="card-number">03</p><h2 data-template="actionsTitle">今日行动</h2></div>
+              <p id="task-progress" class="progress-pill">0 / 0 已完成</p>
+            </div>
+            <div id="task-list" class="task-list"></div>
+            <button id="add-task" class="add-task" type="button"><span aria-hidden="true">＋</span> 添加事项</button>
+          </section>
+
+          <section class="note-card note-green review-card">
+            <div class="card-heading"><span class="card-icon" aria-hidden="true">↗</span><div><p class="card-number">04</p><h2 data-template="reviewTitle">交易复盘</h2></div></div>
+            <ul class="prompt-list" aria-label="交易复盘提示">
+              <li data-template="reviewPrompt1">今天的交易计划是什么？</li><li data-template="reviewPrompt2">实际做了什么？</li><li data-template="reviewPrompt3">哪些地方符合交易规则？</li><li data-template="reviewPrompt4">哪里偏离了？</li><li data-template="reviewPrompt5">当时是什么心理和情绪？</li><li data-template="reviewPrompt6">下次遇到同样的情况，我应该怎么做？</li>
+            </ul>
+            <label class="sr-only" for="review">交易复盘</label>
+            <textarea id="review" class="lined-input tall" rows="8" placeholder="完整记录今天的交易过程、执行与反思……" data-template-placeholder="reviewPlaceholder"></textarea>
+
+            <div class="trading-score">
+              <div class="trading-score-heading">
+                <div><h3 data-template="scoreTitle">今日交易评分</h3><p data-template="scoreDescription">评估过程、执行、风控、纪律与情绪觉察，而非盈亏。</p></div>
+                <label class="no-trade"><input id="no-trade" type="checkbox" /> 今日无交易</label>
+              </div>
+              <div class="score-template-toolbar">
+                <label><input id="score-module-enabled" type="checkbox" /> 显示评分模块</label>
+                <button id="add-score-category" type="button">＋ 添加评分项</button>
+              </div>
+              <div id="score-list" class="score-list"></div>
+              <p class="score-total">今日交易总分：<output id="trading-total">0 / 100</output></p>
+            </div>
+
+            <div class="trading-reflections">
+              <label>今日最大失误：<input id="biggest-mistake" type="text" maxlength="240" placeholder="最值得记住的失误" /></label>
+              <label>下一次只改一件事：<input id="one-trading-change" type="text" maxlength="240" placeholder="写下一件最重要的改变" /></label>
+            </div>
+          </section>
+
+          <div class="life-column">
+            <section class="note-card note-lavender life-card">
+              <div class="card-heading"><span class="card-icon" aria-hidden="true">♡</span><div><p class="card-number">05</p><h2 data-template="lifeTitle">人生下半场日记</h2></div></div>
+              <label class="prompt" for="life-journal" data-template="lifePrompt">今天，我是怎样度过这一天的？</label>
+              <textarea id="life-journal" class="lined-input tall" rows="8" placeholder="感受、相遇、细小的瞬间，以及想要记住的事……" data-template-placeholder="lifePlaceholder"></textarea>
+            </section>
+
+            <div class="practice-grid" aria-label="每日练习">
+              <section class="practice-card practice-english">
+                <div class="practice-heading"><span aria-hidden="true">朗</span><h3 data-template="englishTitle">英语朗读</h3></div>
+                <p class="practice-target">目标：10遍</p>
+                <label class="practice-number">今日完成：<input id="english-repetitions" type="number" min="0" step="1" inputmode="numeric" aria-label="今天完成的英语朗读遍数" /> 遍</label>
+                <label class="practice-check"><input id="english-complete" type="checkbox" disabled /> <span data-template="englishCompleteLabel">已完成</span></label>
+              </section>
+
+              <section class="practice-card practice-exercise">
+                <div class="practice-heading"><span aria-hidden="true">动</span><h3 data-template="exerciseTitle">运动</h3></div>
+                <label class="practice-check"><input id="exercise-done" type="checkbox" /> <span data-template="exerciseDoneLabel">今日已运动</span></label>
+                <label class="practice-number"><input id="exercise-minutes" type="number" min="0" step="1" inputmode="numeric" aria-label="今天运动的分钟数" /> 分钟</label>
+              </section>
+            </div>
+          </div>
+
+          <section class="note-card note-peach closing-card">
+            <div class="card-heading"><span class="card-icon" aria-hidden="true">☾</span><div><p class="card-number">06</p><h2 data-template="closingTitle">今日收官</h2></div></div>
+            <div class="closing-grid">
+              <fieldset class="satisfaction-field">
+                <legend>今日满意度</legend>
+                <div class="satisfaction-top"><output id="satisfaction-output">—</output><span> / 10</span></div>
+                <input id="satisfaction" type="range" min="0" max="10" value="0" aria-label="今日满意度一到十分；零表示尚未填写" />
+                <div class="range-labels"><span>未填写</span><span>10</span></div>
+              </fieldset>
+              <label><span data-template="keywordLabel">今日关键词</span><input id="keyword" type="text" maxlength="32" placeholder="用一个词记住今天" data-template-placeholder="keywordPlaceholder" /></label>
+              <label class="sentence-field"><span data-template="summaryLabel">今日总结</span><input id="one-sentence" type="text" maxlength="240" placeholder="用一两句话，为今天作一个总结……" data-template-placeholder="summaryPlaceholder" /></label>
+            </div>
+          </section>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+    <script src="pwa.js"></script>
+  </body>
+</html>

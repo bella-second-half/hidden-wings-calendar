@@ -1,0 +1,17 @@
+{
+  "name": "隐形的翅膀 · 我的人生下半场日历",
+  "short_name": "隐形的翅膀",
+  "description": "一份只保存在本机的私人日历与每日手账",
+  "lang": "zh-CN",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7f1e8",
+  "theme_color": "#f7f1e8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
