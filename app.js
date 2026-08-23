@@ -950,8 +950,7 @@
       const elapsed = ownsActiveSession ? Math.max(0, Date.now() - active.start) : 0;
       output.value = formatWritingDuration((Number(current.writingAccumulatedMs) || 0) + elapsed);
       output.textContent = output.value;
-      const hasStarted = current.writingHasStarted || current.writingAccumulatedMs > 0 || current.writingSessionStart;
-      controlButton.textContent = active ? "暂停" : hasStarted ? "继续" : "开始";
+      controlButton.setAttribute("aria-pressed", String(Boolean(active)));
     };
 
     const begin = () => {
