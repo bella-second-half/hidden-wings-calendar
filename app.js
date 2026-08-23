@@ -952,7 +952,6 @@
       output.value = formatWritingDuration((Number(current.writingAccumulatedMs) || 0) + elapsed);
       output.textContent = output.value;
       const hasStarted = current.writingHasStarted || current.writingAccumulatedMs > 0 || current.writingSessionStart;
-      controlButton.textContent = active ? "暂停计时" : hasStarted ? "继续计时" : "开始计时";
       statusLabel.textContent = active ? "计时中" : hasStarted ? "已暂停" : "未计时";
       controlButton.setAttribute("aria-pressed", String(Boolean(active)));
     };
