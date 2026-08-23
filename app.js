@@ -82,7 +82,7 @@
       englishContent: "", englishTarget: 10, englishRepetitions: "", exerciseDone: false, exerciseMinutes: "",
       readingContent: "", readingMinutes: "", readingComplete: false,
       meditationSessions: "", meditationMinutes: "", meditationComplete: false,
-      writingContent: "", writingAccumulatedMs: 0, writingSessionStart: null,
+      writingContent: "", writingAccumulatedMs: 0, writingSessionStart: null, writingHasStarted: false,
       rolledTaskCompletions: []
     };
   }
@@ -939,8 +939,7 @@
   function setupWriting(data, key, status) {
     const content = document.querySelector("#writing-content");
     const output = document.querySelector("#writing-timer");
-    const startButton = document.querySelector("#writing-start");
-    const toggleButton = document.querySelector("#writing-toggle");
+    const controlButton = document.querySelector("#writing-control");
     content.value = data.writingContent ?? "";
     content.addEventListener("input", () => updateDay(key, { writingContent: content.value }, status));
 
@@ -951,16 +950,15 @@
       const elapsed = ownsActiveSession ? Math.max(0, Date.now() - active.start) : 0;
       output.value = formatWritingDuration((Number(current.writingAccumulatedMs) || 0) + elapsed);
       output.textContent = output.value;
-      startButton.disabled = Boolean(active);
-      toggleButton.disabled = Boolean(active && !ownsActiveSession);
-      toggleButton.textContent = ownsActiveSession ? "暂停" : "继续";
+      const hasStarted = current.writingHasStarted || current.writingAccumulatedMs > 0 || current.writingSessionStart;
+      controlButton.textContent = active ? "暂停" : hasStarted ? "继续" : "开始";
     };
 
     const begin = () => {
       if (activeWritingSession()) return;
       const todayKey = dateKey(new Date());
       const startedAt = Date.now();
-      updateDay(todayKey, { writingSessionStart: startedAt }, todayKey === key ? status : null);
+      updateDay(todayKey, { writingSessionStart: startedAt, writingHasStarted: true }, todayKey === key ? status : null);
       if (todayKey !== key) {
         location.hash = `day/${todayKey}`;
         return;
@@ -968,17 +966,15 @@
       refresh();
     };
 
-    startButton.addEventListener("click", begin);
-    toggleButton.addEventListener("click", () => {
+    controlButton.addEventListener("click", () => {
       const active = activeWritingSession();
       if (!active) {
         begin();
         return;
       }
-      if (active.key !== key) return;
-      const current = getDay(key);
+      const current = getDay(active.key);
       const accumulated = (Number(current.writingAccumulatedMs) || 0) + Math.max(0, Date.now() - active.start);
-      updateDay(key, { writingAccumulatedMs: accumulated, writingSessionStart: null }, status);
+      updateDay(active.key, { writingAccumulatedMs: accumulated, writingSessionStart: null, writingHasStarted: true }, active.key === key ? status : null);
       refresh();
     });
 
