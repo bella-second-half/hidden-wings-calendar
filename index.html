@@ -169,6 +169,20 @@
                 <label class="practice-check"><input id="exercise-done" type="checkbox" /> <span data-template="exerciseDoneLabel">今日已运动</span></label>
                 <label class="practice-number"><input id="exercise-minutes" type="number" min="0" step="1" inputmode="numeric" aria-label="今天运动的分钟数" /> 分钟</label>
               </section>
+
+              <section class="practice-card practice-reading">
+                <div class="practice-heading"><span aria-hidden="true">阅</span><h3>阅读</h3></div>
+                <label class="practice-content"><span>今日内容</span><input id="reading-content" type="text" maxlength="120" placeholder="例如：书名或章节" /></label>
+                <label class="practice-number">阅读时长：<input id="reading-minutes" type="number" min="0" step="1" inputmode="numeric" aria-label="今天阅读的分钟数" /> 分钟</label>
+                <label class="practice-check"><input id="reading-complete" type="checkbox" /> <span>已完成</span></label>
+              </section>
+
+              <section class="practice-card practice-meditation">
+                <div class="practice-heading"><span aria-hidden="true">静</span><h3>冥想</h3></div>
+                <label class="practice-number">今日次数：<input id="meditation-sessions" type="number" min="0" step="1" inputmode="numeric" aria-label="今天冥想的次数" /> 次</label>
+                <label class="practice-number">总时长：<input id="meditation-minutes" type="number" min="0" step="1" inputmode="numeric" aria-label="今天冥想的总分钟数" /> 分钟</label>
+                <label class="practice-check"><input id="meditation-complete" type="checkbox" /> <span>已完成</span></label>
+              </section>
             </div>
           </div>
 

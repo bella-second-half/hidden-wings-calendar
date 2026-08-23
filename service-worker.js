@@ -1,4 +1,4 @@
-const CACHE_NAME = "hidden-wings-web-v2";
+const CACHE_NAME = "hidden-wings-web-v3";
 const APP_SHELL = [
   "./",
   "./index.html",

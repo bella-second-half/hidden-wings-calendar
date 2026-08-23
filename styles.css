@@ -276,6 +276,8 @@ body.calendar-page .button-today { border-color: var(--theme-deep, var(--ink)); 
 .practice-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(120deg, rgba(255,255,255,.22), transparent 48%); }
 .practice-english { background: var(--practice-gold); transform: rotate(-.18deg); }
 .practice-exercise { background: var(--practice-mint); transform: rotate(.18deg); }
+.practice-reading { background: var(--practice-gold); transform: rotate(.12deg); }
+.practice-meditation { background: var(--practice-mint); transform: rotate(-.12deg); }
 .practice-heading { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
 .practice-heading > span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid rgba(55,48,43,.2); border-radius: 50%; font-family: var(--serif); font-size: .68rem; }
 .practice-heading h3 { margin: 0; font-family: var(--serif); font-size: 1rem; }

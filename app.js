@@ -79,6 +79,8 @@
       tradingScores: emptyTradingScores(), noTrade: false, biggestMistake: "", oneTradingChange: "",
       satisfaction: 0, keyword: "", oneSentence: "", mood: "",
       englishContent: "", englishTarget: 10, englishRepetitions: "", exerciseDone: false, exerciseMinutes: "",
+      readingContent: "", readingMinutes: "", readingComplete: false,
+      meditationSessions: "", meditationMinutes: "", meditationComplete: false,
       rolledTaskCompletions: []
     };
   }
@@ -204,7 +206,9 @@
       const completed = data.tasks.filter(task => task.complete).length;
       const hasJournal = [data.direction, data.dailyQuote, data.review, data.lifeJournal, data.biggestMistake, data.oneTradingChange, data.oneSentence].some(value => value?.trim());
       const hasScore = data.noTrade || Object.values(data.tradingScores).some(value => value !== "");
-      const hasPractice = data.englishContent.trim() || data.englishTarget !== 10 || data.englishRepetitions !== "" || data.exerciseDone || data.exerciseMinutes !== "";
+      const hasPractice = data.englishContent.trim() || data.englishTarget !== 10 || data.englishRepetitions !== "" || data.exerciseDone || data.exerciseMinutes !== ""
+        || data.readingContent.trim() || data.readingMinutes !== "" || data.readingComplete
+        || data.meditationSessions !== "" || data.meditationMinutes !== "" || data.meditationComplete;
       const hasEntry = hasJournal || hasScore || hasPractice || data.tasks.length > 0 || data.satisfaction > 0 || data.keyword.trim() || data.quoteSource.trim() || data.mood;
       const cell = document.createElement("div");
       cell.className = "day-cell";
@@ -844,12 +848,24 @@
     const englishComplete = document.querySelector("#english-complete");
     const exerciseDone = document.querySelector("#exercise-done");
     const exerciseMinutes = document.querySelector("#exercise-minutes");
+    const readingContent = document.querySelector("#reading-content");
+    const readingMinutes = document.querySelector("#reading-minutes");
+    const readingComplete = document.querySelector("#reading-complete");
+    const meditationSessions = document.querySelector("#meditation-sessions");
+    const meditationMinutes = document.querySelector("#meditation-minutes");
+    const meditationComplete = document.querySelector("#meditation-complete");
 
     englishContent.value = data.englishContent ?? "";
     englishTarget.value = data.englishTarget ?? 10;
     englishCount.value = data.englishRepetitions ?? "";
     exerciseDone.checked = Boolean(data.exerciseDone);
     exerciseMinutes.value = data.exerciseMinutes ?? "";
+    readingContent.value = data.readingContent ?? "";
+    readingMinutes.value = data.readingMinutes ?? "";
+    readingComplete.checked = Boolean(data.readingComplete);
+    meditationSessions.value = data.meditationSessions ?? "";
+    meditationMinutes.value = data.meditationMinutes ?? "";
+    meditationComplete.checked = Boolean(data.meditationComplete);
 
     const updateEnglishStatus = () => {
       const complete = Number(englishCount.value) >= Number(englishTarget.value || 10);
@@ -874,6 +890,21 @@
       const value = normalizePracticeNumber(exerciseMinutes);
       updateDay(key, { exerciseMinutes: value }, status);
     });
+    readingContent.addEventListener("input", () => updateDay(key, { readingContent: readingContent.value }, status));
+    readingMinutes.addEventListener("input", () => {
+      const value = normalizePracticeNumber(readingMinutes);
+      updateDay(key, { readingMinutes: value }, status);
+    });
+    readingComplete.addEventListener("change", () => updateDay(key, { readingComplete: readingComplete.checked }, status));
+    meditationSessions.addEventListener("input", () => {
+      const value = normalizePracticeNumber(meditationSessions);
+      updateDay(key, { meditationSessions: value }, status);
+    });
+    meditationMinutes.addEventListener("input", () => {
+      const value = normalizePracticeNumber(meditationMinutes);
+      updateDay(key, { meditationMinutes: value }, status);
+    });
+    meditationComplete.addEventListener("change", () => updateDay(key, { meditationComplete: meditationComplete.checked }, status));
     updateEnglishStatus();
   }
 
