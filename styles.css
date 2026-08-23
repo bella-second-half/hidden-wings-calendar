@@ -230,6 +230,10 @@ body.calendar-page .button-today { border-color: var(--theme-deep, var(--ink)); 
 .task-check { width: 20px; height: 20px; margin: 0; accent-color: #425f66; }
 .task-input { width: 100%; min-width: 0; padding: 7px 5px; border: 0; border-radius: 4px; outline: none; background: transparent; }
 .task-input:focus { background: rgba(255,255,255,.38); }
+.task-name-wrap { min-width: 0; }
+.task-name-wrap .task-name { display: block; }
+.rollover-label { display: inline-block; margin: 1px 5px 0; padding: 2px 6px; border-radius: 100px; color: #536d74; background: rgba(255,255,255,.42); font-size: .61rem; font-weight: 750; white-space: nowrap; }
+.task-row input[readonly] { color: inherit; cursor: default; opacity: .82; }
 .task-row.done .task-name { text-decoration: line-through; opacity: .58; }
 .delete-task { border: 0; border-radius: 50%; width: 30px; height: 30px; background: transparent; color: rgba(56,52,47,.55); font-size: 1rem; }
 .delete-task:hover { color: #7e453e; background: rgba(255,255,255,.38); }
@@ -276,6 +280,8 @@ body.calendar-page .button-today { border-color: var(--theme-deep, var(--ink)); 
 .practice-heading > span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid rgba(55,48,43,.2); border-radius: 50%; font-family: var(--serif); font-size: .68rem; }
 .practice-heading h3 { margin: 0; font-family: var(--serif); font-size: 1rem; }
 .practice-target { position: relative; z-index: 1; margin: 0 0 8px; color: rgba(56,52,47,.68); font-size: .7rem; }
+.practice-content { position: relative; z-index: 1; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; margin-bottom: 6px; color: rgba(56,52,47,.68); font-size: .7rem; }
+.practice-content input { min-width: 0; padding: 6px 3px; border: 0; border-bottom: 1px solid rgba(61,54,47,.2); outline: 0; background: transparent; }
 .practice-number, .practice-check { position: relative; z-index: 1; display: flex; align-items: center; gap: 5px; font-size: .73rem; }
 .practice-number { margin: 8px 0; white-space: nowrap; }
 .practice-number input { width: 54px; min-width: 0; padding: 5px; border: 1px solid rgba(61,54,47,.17); border-radius: 5px; outline: 0; background: rgba(255,255,255,.4); text-align: center; }

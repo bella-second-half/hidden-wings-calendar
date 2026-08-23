@@ -158,7 +158,8 @@
             <div class="practice-grid" aria-label="每日练习">
               <section class="practice-card practice-english">
                 <div class="practice-heading"><span aria-hidden="true">朗</span><h3 data-template="englishTitle">英语朗读</h3></div>
-                <p class="practice-target">目标：10遍</p>
+                <label class="practice-content"><span>今日内容</span><input id="english-content" type="text" maxlength="120" placeholder="例如：Lesson 50" /></label>
+                <label class="practice-number practice-target">目标：<input id="english-target" type="number" min="1" step="1" inputmode="numeric" aria-label="今天的英语朗读目标遍数" /> 遍</label>
                 <label class="practice-number">今日完成：<input id="english-repetitions" type="number" min="0" step="1" inputmode="numeric" aria-label="今天完成的英语朗读遍数" /> 遍</label>
                 <label class="practice-check"><input id="english-complete" type="checkbox" disabled /> <span data-template="englishCompleteLabel">已完成</span></label>
               </section>

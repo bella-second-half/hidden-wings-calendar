@@ -78,7 +78,8 @@
       direction: "", dailyQuote: "", quoteSource: "", tasks: [], review: "", lifeJournal: "",
       tradingScores: emptyTradingScores(), noTrade: false, biggestMistake: "", oneTradingChange: "",
       satisfaction: 0, keyword: "", oneSentence: "", mood: "",
-      englishRepetitions: "", exerciseDone: false, exerciseMinutes: ""
+      englishContent: "", englishTarget: 10, englishRepetitions: "", exerciseDone: false, exerciseMinutes: "",
+      rolledTaskCompletions: []
     };
   }
 
@@ -131,6 +132,45 @@
   function isSameDay(a, b) { return dateKey(a) === dateKey(b); }
   function shiftDate(date, days) { return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days); }
 
+  function daysBetween(fromKey, toKey) {
+    const dayMs = 24 * 60 * 60 * 1000;
+    return Math.round((dateFromKey(toKey) - dateFromKey(fromKey)) / dayMs);
+  }
+
+  function taskReference(originKey, task) {
+    return `${originKey}:${task.id}`;
+  }
+
+  function visibleTasks(key) {
+    const ownTasks = getDay(key).tasks.map(task => ({ ...task, originKey: key, rolled: false }));
+    const rolledTasks = [];
+    const completionDates = new Map();
+    Object.keys(store)
+      .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date) && date <= key)
+      .sort()
+      .forEach(date => {
+        (getDay(date).rolledTaskCompletions || []).forEach(reference => {
+          if (!completionDates.has(reference)) completionDates.set(reference, date);
+        });
+      });
+
+    Object.keys(store)
+      .filter(originKey => /^\d{4}-\d{2}-\d{2}$/.test(originKey) && originKey < key)
+      .sort()
+      .forEach(originKey => {
+        getDay(originKey).tasks.forEach(task => {
+          if (task.complete) return;
+          const reference = taskReference(originKey, task);
+          const completionKey = completionDates.get(reference);
+          if (!completionKey || completionKey === key) {
+            rolledTasks.push({ ...task, complete: completionKey === key, originKey, rolled: true, reference });
+          }
+        });
+      });
+
+    return [...ownTasks, ...rolledTasks];
+  }
+
   function readRoute() {
     const match = location.hash.match(/^#day\/(\d{4}-\d{2}-\d{2})$/);
     return match ? { view: "day", key: match[1] } : { view: "calendar" };
@@ -164,7 +204,7 @@
       const completed = data.tasks.filter(task => task.complete).length;
       const hasJournal = [data.direction, data.dailyQuote, data.review, data.lifeJournal, data.biggestMistake, data.oneTradingChange, data.oneSentence].some(value => value?.trim());
       const hasScore = data.noTrade || Object.values(data.tradingScores).some(value => value !== "");
-      const hasPractice = data.englishRepetitions !== "" || data.exerciseDone || data.exerciseMinutes !== "";
+      const hasPractice = data.englishContent.trim() || data.englishTarget !== 10 || data.englishRepetitions !== "" || data.exerciseDone || data.exerciseMinutes !== "";
       const hasEntry = hasJournal || hasScore || hasPractice || data.tasks.length > 0 || data.satisfaction > 0 || data.keyword.trim() || data.quoteSource.trim() || data.mood;
       const cell = document.createElement("div");
       cell.className = "day-cell";
@@ -798,21 +838,32 @@
   }
 
   function setupPractices(data, key, status) {
+    const englishContent = document.querySelector("#english-content");
+    const englishTarget = document.querySelector("#english-target");
     const englishCount = document.querySelector("#english-repetitions");
     const englishComplete = document.querySelector("#english-complete");
     const exerciseDone = document.querySelector("#exercise-done");
     const exerciseMinutes = document.querySelector("#exercise-minutes");
 
+    englishContent.value = data.englishContent ?? "";
+    englishTarget.value = data.englishTarget ?? 10;
     englishCount.value = data.englishRepetitions ?? "";
     exerciseDone.checked = Boolean(data.exerciseDone);
     exerciseMinutes.value = data.exerciseMinutes ?? "";
 
     const updateEnglishStatus = () => {
-      const complete = Number(englishCount.value) >= 10;
+      const complete = Number(englishCount.value) >= Number(englishTarget.value || 10);
       englishComplete.checked = complete;
       englishComplete.closest("label").classList.toggle("complete", complete);
     };
 
+    englishContent.addEventListener("input", () => updateDay(key, { englishContent: englishContent.value }, status));
+    englishTarget.addEventListener("input", () => {
+      const value = englishTarget.value === "" ? "" : Math.max(1, Math.floor(Number(englishTarget.value) || 1));
+      if (value !== "") englishTarget.value = value;
+      updateDay(key, { englishTarget: value }, status);
+      updateEnglishStatus();
+    });
     englishCount.addEventListener("input", () => {
       const value = normalizePracticeNumber(englishCount);
       updateDay(key, { englishRepetitions: value }, status);
@@ -836,7 +887,7 @@
   function renderTasks(key, status, focusLast = false) {
     const list = document.querySelector("#task-list");
     const progress = document.querySelector("#task-progress");
-    const tasks = getDay(key).tasks;
+    const tasks = visibleTasks(key);
     const completed = tasks.filter(task => task.complete).length;
     progress.textContent = `${completed} / ${tasks.length} 已完成`;
     list.replaceChildren();
@@ -861,7 +912,16 @@
       checkbox.checked = task.complete;
       checkbox.setAttribute("aria-label", `将${task.name || "此事项"}标记为已完成`);
 
+      const nameWrap = document.createElement("div");
+      nameWrap.className = "task-name-wrap";
       const name = taskInput("task-name", "事项名称", task.name);
+      nameWrap.append(name);
+      if (task.rolled) {
+        const rollover = document.createElement("small");
+        rollover.className = "rollover-label";
+        rollover.textContent = `↪ 顺延 ${daysBetween(task.originKey, key)} 天`;
+        nameWrap.append(rollover);
+      }
       const number = taskInput("task-number", "数量（选填）", task.number, "text", "numeric");
       const note = taskInput("task-note", "简短备注（选填）", task.note);
       const remove = document.createElement("button");
@@ -870,15 +930,23 @@
       remove.setAttribute("aria-label", `删除${task.name || "此事项"}`);
       remove.textContent = "×";
 
-      checkbox.addEventListener("change", () => updateTask(key, task.id, { complete: checkbox.checked }, status, true));
-      name.addEventListener("input", () => updateTask(key, task.id, { name: name.value }, status));
-      number.addEventListener("input", () => updateTask(key, task.id, { number: number.value }, status));
-      note.addEventListener("input", () => updateTask(key, task.id, { note: note.value }, status));
+      if (task.rolled) {
+        name.readOnly = true;
+        number.readOnly = true;
+        note.readOnly = true;
+        remove.hidden = true;
+        checkbox.addEventListener("change", () => updateRolledTaskCompletion(key, task.reference, checkbox.checked, status));
+      } else {
+        checkbox.addEventListener("change", () => updateTask(key, task.id, { complete: checkbox.checked }, status, true));
+        name.addEventListener("input", () => updateTask(key, task.id, { name: name.value }, status));
+        number.addEventListener("input", () => updateTask(key, task.id, { number: number.value }, status));
+        note.addEventListener("input", () => updateTask(key, task.id, { note: note.value }, status));
+      }
       remove.addEventListener("click", () => {
         updateDay(key, { tasks: getDay(key).tasks.filter(item => item.id !== task.id) }, status);
         renderTasks(key, status);
       });
-      row.append(checkbox, name, number, note, remove);
+      row.append(checkbox, nameWrap, number, note, remove);
       list.append(row);
       if (focusLast && index === tasks.length - 1) requestAnimationFrame(() => name.focus());
     });
@@ -898,6 +966,15 @@
     const tasks = getDay(key).tasks.map(task => task.id === id ? { ...task, ...changes } : task);
     updateDay(key, { tasks }, status);
     if (rerender) renderTasks(key, status);
+  }
+
+  function updateRolledTaskCompletion(key, reference, complete, status) {
+    const current = getDay(key).rolledTaskCompletions || [];
+    const completions = complete
+      ? [...new Set([...current, reference])]
+      : current.filter(item => item !== reference);
+    updateDay(key, { rolledTaskCompletions: completions }, status);
+    renderTasks(key, status);
   }
 
   window.addEventListener("hashchange", render);
