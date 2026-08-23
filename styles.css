@@ -278,6 +278,7 @@ body.calendar-page .button-today { border-color: var(--theme-deep, var(--ink)); 
 .practice-exercise { background: var(--practice-mint); transform: rotate(.18deg); }
 .practice-reading { background: var(--practice-gold); transform: rotate(.12deg); }
 .practice-meditation { background: var(--practice-mint); transform: rotate(-.12deg); }
+.practice-writing { grid-column: 1 / -1; justify-self: center; width: calc(50% - 6px); background: var(--practice-gold); transform: rotate(-.08deg); }
 .practice-heading { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
 .practice-heading > span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid rgba(55,48,43,.2); border-radius: 50%; font-family: var(--serif); font-size: .68rem; }
 .practice-heading h3 { margin: 0; font-family: var(--serif); font-size: 1rem; }
@@ -291,6 +292,11 @@ body.calendar-page .button-today { border-color: var(--theme-deep, var(--ink)); 
 .practice-check input:disabled { opacity: 1; }
 .practice-check { color: rgba(56,52,47,.62); }
 .practice-check.complete { color: #4d6658; font-weight: 700; }
+.writing-total { position: relative; z-index: 1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 10px 0; color: rgba(56,52,47,.68); font-size: .7rem; }
+.writing-total output { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 1.08rem; font-weight: 750; letter-spacing: .04em; }
+.writing-actions { position: relative; z-index: 1; display: flex; gap: 7px; }
+.writing-actions button { flex: 1; min-height: 32px; padding: 6px 9px; border: 1px solid rgba(61,54,47,.18); border-radius: 6px; background: rgba(255,255,255,.42); color: var(--ink); font-size: .72rem; font-weight: 700; }
+.writing-actions button:disabled { cursor: default; opacity: .42; }
 .closing-grid { display: grid; grid-template-columns: .8fr 1fr; gap: 26px 34px; }
 .closing-grid label, .satisfaction-field legend { font-family: var(--serif); font-size: .8rem; font-weight: 700; }
 .closing-grid input[type="text"] { display: block; margin-top: 10px; padding: 10px 0; border-bottom: 1px solid rgba(61,54,47,.24); font-family: var(--sans); font-weight: 400; }
@@ -341,6 +347,7 @@ body.calendar-page .button-today { border-color: var(--theme-deep, var(--ink)); 
   .life-column { gap: 15px; }
   .practice-grid { grid-template-columns: 1fr; gap: 10px; }
   .practice-card { transform: none; }
+  .practice-writing { grid-column: auto; width: 100%; }
   .theme-swatches { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .home-template-controls { justify-content: flex-start; flex-wrap: wrap; margin: -5px 4px 13px; }
   .task-row { grid-template-columns: auto 1fr auto; gap: 5px; }

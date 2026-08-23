@@ -40,6 +40,7 @@
   ];
   let calendarCursor = startOfMonth(new Date());
   let saveTimer;
+  let writingTimer;
   let closeMoodPicker;
   let selectedTheme = loadTheme();
   let templateStore = loadTemplate();
@@ -81,6 +82,7 @@
       englishContent: "", englishTarget: 10, englishRepetitions: "", exerciseDone: false, exerciseMinutes: "",
       readingContent: "", readingMinutes: "", readingComplete: false,
       meditationSessions: "", meditationMinutes: "", meditationComplete: false,
+      writingContent: "", writingAccumulatedMs: 0, writingSessionStart: null,
       rolledTaskCompletions: []
     };
   }
@@ -180,6 +182,7 @@
 
   function render() {
     clearTimeout(saveTimer);
+    clearInterval(writingTimer);
     const route = readRoute();
     if (route.view !== "calendar") exitHomeTemplateEditing();
     document.body.classList.toggle("daily-page", route.view === "day");
@@ -208,7 +211,8 @@
       const hasScore = data.noTrade || Object.values(data.tradingScores).some(value => value !== "");
       const hasPractice = data.englishContent.trim() || data.englishTarget !== 10 || data.englishRepetitions !== "" || data.exerciseDone || data.exerciseMinutes !== ""
         || data.readingContent.trim() || data.readingMinutes !== "" || data.readingComplete
-        || data.meditationSessions !== "" || data.meditationMinutes !== "" || data.meditationComplete;
+        || data.meditationSessions !== "" || data.meditationMinutes !== "" || data.meditationComplete
+        || data.writingContent.trim() || data.writingAccumulatedMs > 0 || data.writingSessionStart;
       const hasEntry = hasJournal || hasScore || hasPractice || data.tasks.length > 0 || data.satisfaction > 0 || data.keyword.trim() || data.quoteSource.trim() || data.mood;
       const cell = document.createElement("div");
       cell.className = "day-cell";
@@ -576,6 +580,7 @@
     bindText("#one-sentence", "oneSentence", data, key, status);
     const scoreController = setupTradingScore(data, key, status);
     setupPractices(data, key, status);
+    setupWriting(data, key, status);
 
     const satisfaction = document.querySelector("#satisfaction");
     const satisfactionOutput = document.querySelector("#satisfaction-output");
@@ -913,6 +918,72 @@
     const value = Math.max(0, Math.floor(Number(input.value) || 0));
     input.value = value;
     return value;
+  }
+
+  function activeWritingSession() {
+    for (const [key, saved] of Object.entries(store)) {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(key) && Number.isFinite(Number(saved?.writingSessionStart)) && Number(saved.writingSessionStart) > 0) {
+        return { key, start: Number(saved.writingSessionStart) };
+      }
+    }
+    return null;
+  }
+
+  function formatWritingDuration(milliseconds) {
+    const seconds = Math.max(0, Math.floor(Number(milliseconds || 0) / 1000));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return [hours, minutes, seconds % 60].map(value => String(value).padStart(2, "0")).join(":");
+  }
+
+  function setupWriting(data, key, status) {
+    const content = document.querySelector("#writing-content");
+    const output = document.querySelector("#writing-timer");
+    const startButton = document.querySelector("#writing-start");
+    const toggleButton = document.querySelector("#writing-toggle");
+    content.value = data.writingContent ?? "";
+    content.addEventListener("input", () => updateDay(key, { writingContent: content.value }, status));
+
+    const refresh = () => {
+      const current = getDay(key);
+      const active = activeWritingSession();
+      const ownsActiveSession = active?.key === key;
+      const elapsed = ownsActiveSession ? Math.max(0, Date.now() - active.start) : 0;
+      output.value = formatWritingDuration((Number(current.writingAccumulatedMs) || 0) + elapsed);
+      output.textContent = output.value;
+      startButton.disabled = Boolean(active);
+      toggleButton.disabled = Boolean(active && !ownsActiveSession);
+      toggleButton.textContent = ownsActiveSession ? "暂停" : "继续";
+    };
+
+    const begin = () => {
+      if (activeWritingSession()) return;
+      const todayKey = dateKey(new Date());
+      const startedAt = Date.now();
+      updateDay(todayKey, { writingSessionStart: startedAt }, todayKey === key ? status : null);
+      if (todayKey !== key) {
+        location.hash = `day/${todayKey}`;
+        return;
+      }
+      refresh();
+    };
+
+    startButton.addEventListener("click", begin);
+    toggleButton.addEventListener("click", () => {
+      const active = activeWritingSession();
+      if (!active) {
+        begin();
+        return;
+      }
+      if (active.key !== key) return;
+      const current = getDay(key);
+      const accumulated = (Number(current.writingAccumulatedMs) || 0) + Math.max(0, Date.now() - active.start);
+      updateDay(key, { writingAccumulatedMs: accumulated, writingSessionStart: null }, status);
+      refresh();
+    });
+
+    refresh();
+    writingTimer = setInterval(refresh, 250);
   }
 
   function renderTasks(key, status, focusLast = false) {

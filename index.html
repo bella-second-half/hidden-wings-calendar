@@ -183,6 +183,16 @@
                 <label class="practice-number">总时长：<input id="meditation-minutes" type="number" min="0" step="1" inputmode="numeric" aria-label="今天冥想的总分钟数" /> 分钟</label>
                 <label class="practice-check"><input id="meditation-complete" type="checkbox" /> <span>已完成</span></label>
               </section>
+
+              <section class="practice-card practice-writing">
+                <div class="practice-heading"><span aria-hidden="true">写</span><h3>写作</h3></div>
+                <label class="practice-content"><span>今日内容</span><input id="writing-content" type="text" maxlength="240" placeholder="写下今天的主题" /></label>
+                <div class="writing-total"><span>今日累计</span><output id="writing-timer" aria-live="off">00:00:00</output></div>
+                <div class="writing-actions">
+                  <button id="writing-start" type="button">开始</button>
+                  <button id="writing-toggle" type="button" disabled>暂停</button>
+                </div>
+              </section>
             </div>
           </div>
 

@@ -22,7 +22,7 @@ input, textarea {
 }
 
 @media (hover: none) and (pointer: coarse) {
-  .button, .icon-button, .dialog-close, .add-task, .delete-task, .mood-button {
+  .button, .icon-button, .dialog-close, .add-task, .delete-task, .mood-button, .writing-actions button {
     min-height: 44px;
   }
 
