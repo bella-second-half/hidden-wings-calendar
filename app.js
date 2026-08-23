@@ -2,6 +2,11 @@
   "use strict";
 
   const STORAGE_KEY = "my-second-half-calendar.v1";
+  const STORAGE_MIGRATION_KEY = "my-second-half-calendar.migrations.v2";
+  const LEGACY_STORAGE_KEYS = [
+    "my-second-half-calendar", "my-second-half-calendar.v0",
+    "hidden-wings-calendar", "hidden-wings-calendar.v1"
+  ];
   const THEME_KEY = "hidden-wings-theme.v1";
   const TEMPLATE_KEY = "hidden-wings-template.v1";
   const SOFT_THEMES = [
@@ -47,12 +52,68 @@
 
   applyTheme(selectedTheme);
 
-  function loadStore() {
+  function parseStoredObject(key) {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      const parsed = JSON.parse(localStorage.getItem(key));
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
     } catch {
-      return {};
+      return null;
     }
+  }
+
+  function dailyRecords(candidate) {
+    if (!candidate) return null;
+    const possibleStores = [candidate.data, candidate.days, candidate.entries, candidate];
+    return possibleStores.find(value => value && typeof value === "object" && !Array.isArray(value)
+      && Object.keys(value).some(key => /^\d{4}-\d{2}-\d{2}$/.test(key))) || null;
+  }
+
+  function isBlankStoredValue(value) {
+    return value == null || value === "" || value === false || value === 0
+      || (Array.isArray(value) && value.length === 0)
+      || (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0);
+  }
+
+  function mergeRecoveredValue(current, recovered) {
+    if (isBlankStoredValue(current) && !isBlankStoredValue(recovered)) return recovered;
+    if (Array.isArray(current) && Array.isArray(recovered)) {
+      const combined = [...current];
+      const identities = new Set(current.map(item => typeof item === "object" && item ? item.id || JSON.stringify(item) : String(item)));
+      recovered.forEach(item => {
+        const identity = typeof item === "object" && item ? item.id || JSON.stringify(item) : String(item);
+        if (!identities.has(identity)) { identities.add(identity); combined.push(item); }
+      });
+      return combined;
+    }
+    if (current && recovered && typeof current === "object" && typeof recovered === "object" && !Array.isArray(current) && !Array.isArray(recovered)) {
+      const merged = { ...current };
+      Object.entries(recovered).forEach(([key, value]) => { merged[key] = mergeRecoveredValue(merged[key], value); });
+      return merged;
+    }
+    return current === undefined ? recovered : current;
+  }
+
+  function loadStore() {
+    let current = dailyRecords(parseStoredObject(STORAGE_KEY)) || {};
+    const migrationState = parseStoredObject(STORAGE_MIGRATION_KEY) || {};
+    let changed = false;
+
+    LEGACY_STORAGE_KEYS.forEach(legacyKey => {
+      if (migrationState[legacyKey]) return;
+      const rawLegacy = localStorage.getItem(legacyKey);
+      if (rawLegacy == null) return;
+      const recovered = dailyRecords(parseStoredObject(legacyKey));
+      if (!recovered) return;
+      current = mergeRecoveredValue(current, recovered);
+      migrationState[legacyKey] = new Date().toISOString();
+      changed = true;
+    });
+
+    if (changed) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+      localStorage.setItem(STORAGE_MIGRATION_KEY, JSON.stringify(migrationState));
+    }
+    return current;
   }
 
   function loadTemplate() {
